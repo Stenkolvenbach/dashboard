@@ -315,13 +315,41 @@ tr:hover td{background:#fafaf8}
         </table></div>
       </div>
     </div>
-    <div>
-      <div class="card">
-        <div class="card-hdr"><div class="card-title">Voorraad kleuren</div></div>
-        <div class="card-body" id="voorraad-body"></div>
+
+  </div>
+
+  <!-- RETOUR BAKKEN -->
+  <div style="margin-top:20px">
+    <div class="card">
+      <div class="card-hdr" style="display:flex;align-items:center;justify-content:space-between;background:#111;border-radius:var(--rl) var(--rl) 0 0">
+        <div class="card-title" style="color:#fff">↩ Retour bakken</div>
+        <button class="btn" style="background:#fff;color:#111" id="retour-new">+ Bak toevoegen</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table>
+          <thead><tr><th>Afmeting</th><th>Kleur</th><th>Bodem / Wielen</th><th>Staat</th><th>Opmerking</th><th></th></tr></thead>
+          <tbody id="retour-tbody"></tbody>
+        </table>
       </div>
     </div>
   </div>
+
+  <!-- OUTLET BAKKEN -->
+  <div style="margin-top:16px">
+    <div class="card">
+      <div class="card-hdr" style="display:flex;align-items:center;justify-content:space-between;background:#111;border-radius:var(--rl) var(--rl) 0 0">
+        <div class="card-title" style="color:#fff">🏷️ Outlet bakken</div>
+        <button class="btn" style="background:#fff;color:#111" id="outlet-new">+ Bak toevoegen</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table>
+          <thead><tr><th>Afmeting</th><th>Kleur</th><th>Bodem / Wielen</th><th>Prijs</th><th>Opmerking</th><th></th></tr></thead>
+          <tbody id="outlet-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- =================== KLANTEN =================== -->
@@ -1004,11 +1032,12 @@ renderHome();
 // Voeg nav item toe
 var nav = document.querySelector('.nav');
 var socialBtn = document.querySelector('[data-page="social"]');
-var prodBtn = document.createElement('button');
-prodBtn.className = 'nav-item';
-prodBtn.setAttribute('data-page','prodlijst');
-prodBtn.innerHTML = '<span class="nav-icon">✅</span>Productielijst';
-nav.insertBefore(prodBtn, socialBtn);
+// Productie groep — Productielijst + Schade
+var productieGroep = document.createElement('div');
+productieGroep.className = 'nav-group';
+productieGroep.innerHTML = '<button class="nav-group-header" id="navgroup-productie-header"><span class="nav-icon">🔧</span>Productie<span class="nav-chevron">▶</span></button><div class="nav-sub" id="navgroup-productie-sub"><button class="nav-item" data-page="prodlijst"><span class="nav-icon">✅</span>Productielijst</button><button class="nav-item" data-page="schade"><span class="nav-icon">🔴</span>Schade<span class="nav-badge" id="badge-schade" style="display:none;background:var(--red-l);color:var(--red)">0</span></button></div>';
+nav.insertBefore(productieGroep, socialBtn);
+var prodBtn = document.querySelector('[data-page="prodlijst"]');
 
 // Voeg pagina toe
 var main = document.querySelector('.main');
@@ -2234,11 +2263,7 @@ var check = setInterval(function(){
 
   // Voeg routeplanner knop toe aan bezorg topbar
   var bezorgTopbar = bezorgPage.querySelector('.topbar-right');
-  var plannerBtn = document.createElement('button');
-  plannerBtn.className = 'btn-out';
-  plannerBtn.id = 'open-routeplanner';
-  plannerBtn.textContent = '🗺️ Routeplanner';
-  bezorgTopbar.insertBefore(plannerBtn, bezorgTopbar.firstChild);
+
 
   // Postcode regio definities voor Nederland
   var REGIO_WAGEN = [
@@ -2502,17 +2527,7 @@ var check = setInterval(function(){
   });
 
   // Open routeplanner
-  plannerBtn.addEventListener('click',function(){
-    rpStops = [];
-    // Voeg 3 lege stops toe om mee te beginnen
-    rpStops.push(nieuweStop());
-    rpStops.push(nieuweStop());
-    rpStops.push(nieuweStop());
-    document.getElementById('rp-datum').value = document.getElementById('bezorg-datum').value || today();
-    renderStops();
-    document.getElementById('rp-verdeling').innerHTML = '';
-    document.getElementById('ov-routeplanner').classList.add('open');
-  });
+
 
 }, 300);
 })();
@@ -2528,11 +2543,7 @@ var check = setInterval(function(){
 
   // Knop toevoegen aan bezorgplanning topbar
   var bezTopbar = document.querySelector('#page-bezorg .topbar-right');
-  var plannerBtn = document.createElement('button');
-  plannerBtn.className = 'btn-out';
-  plannerBtn.id = 'open-routeplanner';
-  plannerBtn.innerHTML = '🗺️ Routeplanner';
-  bezTopbar.insertBefore(plannerBtn, bezTopbar.firstChild);
+
 
   // Routeplanner overlay
   var planOv = document.createElement('div');
@@ -4732,5 +4743,396 @@ var check = setInterval(function(){
   };
 
 }, 300);
+})();
+</script>
+<script>
+// ===== SCHADE TAB =====
+(function(){
+var check = setInterval(function(){
+  if(!document.querySelector('[data-page="prodlijst"]')) return;
+  clearInterval(check);
+
+  // 1. Nav knop zit al in de Productie groep (aangemaakt in prodlijst module)
+
+  // 2. Pagina aanmaken
+  var schadePage = document.createElement('div');
+  schadePage.className = 'page';
+  schadePage.id = 'page-schade';
+  schadePage.innerHTML = `
+<div class="topbar">
+  <div>
+    <div class="page-title">Schade & Afgekeurde bakken</div>
+    <div class="page-sub">Automatisch gevuld vanuit de productielijst — rood gemarkeerde items</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-out" id="schade-export">↓ Exporteer CSV</button>
+  </div>
+</div>
+<div id="schade-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px"></div>
+<div id="schade-lijst"></div>
+`;
+  document.querySelector('.main').appendChild(schadePage);
+
+  // 3. Render functie
+  function renderSchade() {
+    // Haal alle afgekeurde items op uit productielijst
+    var afgekeurd = (DB.prodlijst && DB.prodlijst.items || []).filter(function(i){ return i.afgekeurd; });
+
+    // Badge bijwerken
+    var badge = document.getElementById('badge-schade');
+    var openstaand = afgekeurd.filter(function(i){ return !i.schadeMateriaalBesteld; }).length;
+    if(openstaand > 0) {
+      badge.textContent = openstaand;
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
+
+    // Stats
+    var totaal = afgekeurd.length;
+    var besteld = afgekeurd.filter(function(i){ return i.schadeMateriaalBesteld; }).length;
+    var openst = totaal - besteld;
+
+    document.getElementById('schade-stats').innerHTML =
+      '<div class="card"><div class="card-body" style="text-align:center"><div style="font-size:28px;font-weight:500;color:var(--red)">'+totaal+'</div><div style="font-size:11px;color:var(--mu)">Totaal afgekeurd</div></div></div>'+
+      '<div class="card"><div class="card-body" style="text-align:center"><div style="font-size:28px;font-weight:500;color:var(--amber)">'+openst+'</div><div style="font-size:11px;color:var(--mu)">Materiaal nog te bestellen</div></div></div>'+
+      '<div class="card"><div class="card-body" style="text-align:center"><div style="font-size:28px;font-weight:500;color:var(--g)">'+besteld+'</div><div style="font-size:11px;color:var(--mu)">Materiaal besteld ✓</div></div></div>';
+
+    // Lijst
+    var el = document.getElementById('schade-lijst');
+    if(!afgekeurd.length) {
+      el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--mu)"><div style="font-size:32px;margin-bottom:12px">✅</div><div style="font-size:14px;font-weight:500">Geen schade gevonden</div><div style="font-size:12px;margin-top:6px">Rood gemarkeerde items in de productielijst verschijnen hier automatisch</div></div>';
+      return;
+    }
+
+    var html = '<div class="tbl-wrap"><table><thead><tr>';
+    html += '<th>Order</th><th>Maat</th><th>Kleur</th><th>Route dag</th><th>Opmerking (schade)</th><th>Materiaal besteld?</th><th>Notitie</th></tr></thead><tbody>';
+
+    afgekeurd.forEach(function(item) {
+      var dag = (DB.prodlijst && DB.prodlijst.dagen || []).find(function(d){ return d.id === item.dag; });
+      var dagNaam = dag ? dag.naam : 'Onbekend';
+      var besteld = item.schadeMateriaalBesteld || false;
+      var notitie = item.schadeNotitie || '';
+
+      html += '<tr style="background:'+(besteld?'#f8fff8':'#fff5f5')+'">';
+      html += '<td style="font-weight:500">'+item.order+'</td>';
+      html += '<td style="font-size:11px">'+item.maat+'</td>';
+      html += '<td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+item.kleurBg+';margin-right:4px"></span>'+item.kleur+'</td>';
+      html += '<td style="font-size:11px;color:var(--mu)">'+dagNaam+'</td>';
+      html += '<td style="font-size:11px;color:var(--red)">'+(item.opmerking||'<span style="color:var(--mu)">—</span>')+'</td>';
+
+      // Ja / Nee radio buttons
+      html += '<td style="text-align:center">';
+      html += '<div style="display:flex;gap:10px;justify-content:center">';
+      // Ja
+      html += '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:'+(besteld?'var(--g)':'var(--mu)')+';font-weight:'+(besteld?'500':'400')+'">';
+      html += '<input type="radio" class="schade-besteld-radio" name="besteld-'+item.id+'" data-id="'+item.id+'" data-val="ja" '+(item.schadeMateriaalBesteld===true?'checked':'')+' style="accent-color:var(--g);cursor:pointer">';
+      html += 'Ja</label>';
+      // Nee
+      html += '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:'+(besteld===false&&besteld!==undefined?'var(--red)':'var(--mu)')+';font-weight:'+(besteld===false&&besteld!==undefined?'500':'400')+'">';
+      // Standaard Nee aangevinkt als nog niet ingesteld
+      var neeChecked = (item.schadeMateriaalBesteld === undefined || item.schadeMateriaalBesteld === false);
+      html += '<input type="radio" class="schade-besteld-radio" name="besteld-'+item.id+'" data-id="'+item.id+'" data-val="nee" '+(neeChecked?'checked':'')+' style="accent-color:var(--red);cursor:pointer">';
+      html += 'Nee</label>';
+      html += '</div></td>';
+
+      // Notitie veld
+      html += '<td><input type="text" class="schade-notitie-input" data-id="'+item.id+'" value="'+notitie+'" placeholder="Bijv. besteld bij Prozink..." style="width:100%;padding:5px 8px;border:1px solid var(--bd);border-radius:6px;font-size:11px;font-family:DM Mono,monospace;background:var(--bg2);color:var(--tx);outline:none"></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+
+    // Radio button listeners
+    document.querySelectorAll('.schade-besteld-radio').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        var id = Number(this.getAttribute('data-id'));
+        var val = this.getAttribute('data-val');
+        var item = DB.prodlijst.items.find(function(i){ return i.id === id; });
+        if(item) {
+          item.schadeMateriaalBesteld = (val === 'ja');
+          save();
+          renderSchade();
+          if(window.toonMelding) toonMelding(val === 'ja' ? '✅ Materiaal gemarkeerd als besteld' : '❌ Materiaal nog niet besteld', 2500);
+        }
+      });
+    });
+
+    // Notitie listeners
+    var notitieTimer;
+    document.querySelectorAll('.schade-notitie-input').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        var id = Number(this.getAttribute('data-id'));
+        var val = this.value;
+        clearTimeout(notitieTimer);
+        notitieTimer = setTimeout(function() {
+          var item = DB.prodlijst.items.find(function(i){ return i.id === id; });
+          if(item) {
+            item.schadeNotitie = val;
+            save();
+            // Badge updaten
+            var openstaand = DB.prodlijst.items.filter(function(i){ return i.afgekeurd && !i.schadeMateriaalBesteld; }).length;
+            var badge = document.getElementById('badge-schade');
+            if(openstaand > 0) { badge.textContent = openstaand; badge.style.display = 'inline'; }
+            else { badge.style.display = 'none'; }
+          }
+        }, 600);
+      });
+    });
+  }
+
+  // 4. Export CSV
+  document.addEventListener('click', function(e) {
+    if(e.target.id !== 'schade-export') return;
+    var afgekeurd = (DB.prodlijst && DB.prodlijst.items || []).filter(function(i){ return i.afgekeurd; });
+    var csv = '\uFEFF' + 'Order;Maat;Kleur;Dag;Opmerking;Materiaal besteld;Notitie\n';
+    afgekeurd.forEach(function(item) {
+      var dag = (DB.prodlijst && DB.prodlijst.dagen || []).find(function(d){ return d.id === item.dag; });
+      csv += [item.order, item.maat, item.kleur, dag?dag.naam:'', item.opmerking||'', item.schadeMateriaalBesteld?'Ja':'Nee', item.schadeNotitie||''].join(';') + '\n';
+    });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+    a.download = 'Sev_Schade_' + new Date().toISOString().split('T')[0] + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+
+  // 5. Nav klik via event delegation (werkt automatisch via globale listener)
+  // Maar voeg ook renderSchade toe aan renderPage
+  var origRenderPage = window.renderPage;
+  window.renderPage = function(pg) {
+    if(pg === 'schade') { renderSchade(); return; }
+    if(origRenderPage) origRenderPage(pg);
+  };
+
+  // 6. Badge updaten als productielijst wijzigt
+  var origSave = window.save;
+  window.save = function() {
+    if(origSave) origSave();
+    // Update badge
+    var afgekeurd = (DB.prodlijst && DB.prodlijst.items || []).filter(function(i){ return i.afgekeurd && !i.schadeMateriaalBesteld; });
+    var badge = document.getElementById('badge-schade');
+    if(badge) {
+      if(afgekeurd.length > 0) { badge.textContent = afgekeurd.length; badge.style.display = 'inline'; }
+      else { badge.style.display = 'none'; }
+    }
+  };
+
+}, 500);
+})();
+</script>
+<script>
+// ===== RETOUR & OUTLET BAKKEN =====
+(function(){
+
+var KLEUREN = [
+  {ral:'9010', naam:'Wit'},
+  {ral:'9005', naam:'Zwart'},
+  {ral:'7016', naam:'Antraciet'},
+  {ral:'7032', naam:'Beige'},
+  {ral:'7039', naam:'Kwartsgrijs'},
+];
+
+var BODEM_OPTIES = ['ZB — Zonder bodem','MB — Met bodem','MW — Met wielen'];
+
+// Zorg dat DB de juiste velden heeft
+function initDB() {
+  if(!DB.retour) DB.retour = [];
+  if(!DB.outlet) DB.outlet = [];
+}
+
+// ===== RETOUR RENDER =====
+function renderRetour() {
+  initDB();
+  var tbody = document.getElementById('retour-tbody');
+  if(!tbody) return;
+  if(!DB.retour.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty">Geen retour bakken</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = DB.retour.map(function(b) {
+    return '<tr>' +
+      '<td style="font-weight:500">'+b.afmeting+'</td>' +
+      '<td>'+b.kleur+'</td>' +
+      '<td><span class="badge '+(b.bodem==='MB — Met bodem'?'blauw':b.bodem==='MW — Met wielen'?'amber':'grijs')+'">'+b.bodem+'</span></td>' +
+      '<td>'+b.staat+'</td>' +
+      '<td style="font-size:11px;color:var(--mu)">'+(b.opmerking||'—')+'</td>' +
+      '<td><button class="act d retour-del" data-id="'+b.id+'">&#x2715;</button></td>' +
+    '</tr>';
+  }).join('');
+
+  document.querySelectorAll('.retour-del').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = this.getAttribute('data-id');
+      DB.retour = DB.retour.filter(function(b){ return b.id != id; });
+      save(); renderRetour();
+    });
+  });
+}
+
+// ===== OUTLET RENDER =====
+function renderOutlet() {
+  initDB();
+  var tbody = document.getElementById('outlet-tbody');
+  if(!tbody) return;
+  if(!DB.outlet.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty">Geen outlet bakken</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = DB.outlet.map(function(b) {
+    return '<tr>' +
+      '<td style="font-weight:500">'+b.afmeting+'</td>' +
+      '<td>'+b.kleur+'</td>' +
+      '<td><span class="badge '+(b.bodem==='MB — Met bodem'?'blauw':b.bodem==='MW — Met wielen'?'amber':'grijs')+'">'+b.bodem+'</span></td>' +
+      '<td style="color:var(--g);font-weight:500">'+(b.prijs?'€'+b.prijs:'—')+'</td>' +
+      '<td style="font-size:11px;color:var(--mu)">'+(b.opmerking||'—')+'</td>' +
+      '<td><button class="act d outlet-del" data-id="'+b.id+'">&#x2715;</button></td>' +
+    '</tr>';
+  }).join('');
+
+  document.querySelectorAll('.outlet-del').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = this.getAttribute('data-id');
+      DB.outlet = DB.outlet.filter(function(b){ return b.id != id; });
+      save(); renderOutlet();
+    });
+  });
+}
+
+// ===== MODAL AANMAKEN =====
+function maakBakModal(type) {
+  var isOutlet = type === 'outlet';
+  var ovId = 'ov-'+type+'-bak';
+
+  // Verwijder bestaande modal als die er al is
+  var bestaand = document.getElementById(ovId);
+  if(bestaand) bestaand.remove();
+
+  var ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.id = ovId;
+  ov.innerHTML = `
+    <div class="modal" style="width:min(480px,100%)">
+      <div class="modal-hdr">
+        <h2>${isOutlet ? '🏷️ Outlet bak toevoegen' : '↩ Retour bak toevoegen'}</h2>
+        <button class="close-x" data-close="${ovId}">&#x2715;</button>
+      </div>
+      <div class="fgrid" style="margin-bottom:13px">
+        <div class="form-row">
+          <label>Lengte (cm)</label>
+          <input type="number" id="${type}-lengte" placeholder="bijv. 100" min="1">
+        </div>
+        <div class="form-row">
+          <label>Breedte (cm)</label>
+          <input type="number" id="${type}-breedte" placeholder="bijv. 60" min="1">
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:13px">
+        <label>Hoogte (cm)</label>
+        <input type="number" id="${type}-hoogte" placeholder="bijv. 50" min="1" style="max-width:180px">
+      </div>
+      <div class="form-row" style="margin-bottom:13px">
+        <label>Kleur (RAL)</label>
+        <select id="${type}-kleur">
+          ${KLEUREN.map(function(k){ return '<option value="RAL '+k.ral+' — '+k.naam+'">RAL '+k.ral+' — '+k.naam+'</option>'; }).join('')}
+          <option value="Anders">Anders / Maatwerk</option>
+        </select>
+      </div>
+      <div class="form-row" style="margin-bottom:13px">
+        <label>Bodem / Wielen</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+          ${BODEM_OPTIES.map(function(o,i){
+            return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px">'+
+              '<input type="radio" name="'+type+'-bodem" value="'+o+'" '+(i===0?'checked':'')+' style="accent-color:var(--g)"> '+o+'</label>';
+          }).join('')}
+        </div>
+      </div>
+      ${isOutlet ? `
+      <div class="form-row" style="margin-bottom:13px">
+        <label>Outlet prijs (€)</label>
+        <input type="number" id="${type}-prijs" placeholder="bijv. 149" min="0" style="max-width:180px">
+      </div>` : `
+      <div class="form-row" style="margin-bottom:13px">
+        <label>Staat</label>
+        <select id="${type}-staat">
+          <option>Lichte beschadiging</option>
+          <option>Matige beschadiging</option>
+          <option>Kleurafwijking</option>
+          <option>Overig</option>
+        </select>
+      </div>`}
+      <div class="form-row" style="margin-bottom:20px">
+        <label>Opmerking</label>
+        <input type="text" id="${type}-opmerking" placeholder="Optionele toelichting...">
+      </div>
+      <div class="modal-foot">
+        <button class="btn-out" data-close="${ovId}">Annuleren</button>
+        <button class="btn" id="${type}-opslaan">Opslaan</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.classList.add('open');
+
+  // Close handlers
+  ov.querySelectorAll('[data-close]').forEach(function(b) {
+    b.addEventListener('click', function(){ ov.classList.remove('open'); });
+  });
+
+  // Opslaan
+  document.getElementById(type+'-opslaan').addEventListener('click', function() {
+    var l = Number(document.getElementById(type+'-lengte').value);
+    var br = Number(document.getElementById(type+'-breedte').value);
+    var h = Number(document.getElementById(type+'-hoogte').value);
+    if(!l || !br || !h) { alert('Vul lengte, breedte en hoogte in.'); return; }
+
+    var kleur = document.getElementById(type+'-kleur').value;
+    var bodem = document.querySelector('input[name="'+type+'-bodem"]:checked').value;
+    var opmerking = document.getElementById(type+'-opmerking').value;
+    var afmeting = l+'×'+br+'×'+h+' cm';
+
+    initDB();
+    var item = {
+      id: Date.now(),
+      afmeting: afmeting,
+      kleur: kleur,
+      bodem: bodem,
+      opmerking: opmerking,
+    };
+
+    if(isOutlet) {
+      item.prijs = document.getElementById(type+'-prijs').value || '';
+    } else {
+      item.staat = document.getElementById(type+'-staat').value;
+    }
+
+    DB[type].push(item);
+    save();
+    isOutlet ? renderOutlet() : renderRetour();
+    ov.classList.remove('open');
+    if(window.toonMelding) toonMelding('✓ Bak toegevoegd aan '+(isOutlet?'outlet':'retour'), 2500);
+  });
+}
+
+// ===== INIT =====
+var check = setInterval(function() {
+  if(!document.getElementById('retour-new')) return;
+  clearInterval(check);
+
+  initDB();
+  renderRetour();
+  renderOutlet();
+
+  document.getElementById('retour-new').addEventListener('click', function(){ maakBakModal('retour'); });
+  document.getElementById('outlet-new').addEventListener('click', function(){ maakBakModal('outlet'); });
+
+  // Herrender als productie pagina geopend wordt
+  var origRenderPage = window.renderPage;
+  window.renderPage = function(pg) {
+    if(origRenderPage) origRenderPage(pg);
+    if(pg === 'productie') { renderRetour(); renderOutlet(); }
+  };
+
+}, 400);
+
 })();
 </script>
