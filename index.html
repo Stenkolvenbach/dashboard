@@ -19,28 +19,29 @@
 body{font-family:'DM Mono',monospace;background:var(--bg3);color:var(--tx);min-height:100vh;font-size:13px}
 
 /* SIDEBAR */
-.sidebar{position:fixed;top:0;left:0;width:200px;height:100vh;background:var(--bg);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:100}
-.logo{padding:20px 18px 16px;border-bottom:1px solid var(--bd)}
-.logo-name{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--g);display:flex;align-items:center;gap:8px}
+.sidebar{position:fixed;top:0;left:0;width:200px;height:100vh;background:#1a2e1a;border-right:none;display:flex;flex-direction:column;z-index:100}
+.logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.logo-name{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:#7ec87e;display:flex;align-items:center;gap:8px}
+.logo-name img{filter:brightness(0) invert(1);opacity:0.9}
 .logo-dot{width:8px;height:8px;background:var(--g);border-radius:50%;flex-shrink:0}
-.logo-sub{font-size:10px;color:var(--mu);margin-top:4px;padding-left:0}
+.logo-sub{font-size:10px;color:rgba(255,255,255,0.45);margin-top:4px;padding-left:0}
 .nav{padding:12px 10px;flex:1;overflow-y:auto}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:var(--mu);font-size:12px;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;font-family:'DM Mono',monospace}
-.nav-item:hover{background:var(--bg2);color:var(--tx)}
-.nav-group-header{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:var(--mu);font-size:12px;margin-bottom:0;border:none;background:transparent;width:100%;text-align:left;font-family:'DM Mono',monospace}
-.nav-group-header:hover{background:var(--bg2);color:var(--tx)}
-.nav-group-header.open{color:var(--g);font-weight:500}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;font-family:'DM Mono',monospace}
+.nav-item:hover{background:rgba(255,255,255,0.1);color:#fff}
+.nav-group-header{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:0;border:none;background:transparent;width:100%;text-align:left;font-family:'DM Mono',monospace}
+.nav-group-header:hover{background:rgba(255,255,255,0.1);color:#fff}
+.nav-group-header.open{color:#7ec87e;font-weight:500}
 .nav-group-header .nav-chevron{margin-left:auto;font-size:10px;transition:transform .2s}
 .nav-group-header.open .nav-chevron{transform:rotate(90deg)}
 .nav-sub{display:none;padding-left:14px;margin-bottom:2px}
 .nav-sub.open{display:block}
 .nav-sub .nav-item{font-size:11px;padding:7px 10px;margin-bottom:1px}
-.nav-sub .nav-item.active{background:var(--gl);color:var(--g)}
-.nav-item.active{background:var(--gl);color:var(--g);font-weight:500}
+.nav-sub .nav-item.active{background:rgba(126,200,126,0.2);color:#7ec87e}
+.nav-item.active{background:rgba(126,200,126,0.2);color:#7ec87e;font-weight:500}
 .nav-icon{font-size:15px;flex-shrink:0;width:20px;text-align:center}
-.nav-badge{margin-left:auto;background:var(--red-l);color:var(--red);border-radius:10px;padding:1px 7px;font-size:10px}
-.nav-badge.green{background:var(--gl);color:var(--g)}
-.sidebar-footer{padding:14px 18px;border-top:1px solid var(--bd);font-size:10px;color:var(--mu)}
+.nav-badge{margin-left:auto;background:rgba(163,45,45,0.3);color:#ff9999;border-radius:10px;padding:1px 7px;font-size:10px}
+.nav-badge.green{background:rgba(126,200,126,0.25);color:#7ec87e}
+.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,0.1);font-size:10px;color:rgba(255,255,255,0.35)}
 
 /* MAIN */
 .main{margin-left:200px;min-height:100vh;padding:24px}
@@ -212,6 +213,7 @@ tr:hover td{background:#fafaf8}
   </div>
   <nav class="nav">
     <button class="nav-item active" data-page="home"><span class="nav-icon">⌂</span>Dagoverzicht</button>
+    <button class="nav-item" data-page="weekplanning"><span class="nav-icon">📅</span>Weekplanning</button>
     <button class="nav-item" data-page="offertes"><span class="nav-icon">📋</span>Offertes<span class="nav-badge" id="badge-offertes">0</span></button>
     <button class="nav-item" data-page="orders"><span class="nav-icon">📦</span>Orders</button>
     <div class="nav-group" id="navgroup-bezorging">
@@ -252,6 +254,19 @@ tr:hover td{background:#fafaf8}
       <div id="home-orders"></div>
     </div>
   </div>
+</div>
+
+<!-- =================== WEEKPLANNING =================== -->
+<div class="page" id="page-weekplanning">
+  <div class="topbar">
+    <div><div class="page-title">Weekplanning</div><div class="page-sub" id="week-sub"></div></div>
+    <div class="topbar-right">
+      <button class="btn-out" id="week-vorige">← Vorige week</button>
+      <button class="btn-out" id="week-vandaag">Vandaag</button>
+      <button class="btn-out" id="week-volgende">Volgende week →</button>
+    </div>
+  </div>
+  <div id="week-grid"></div>
 </div>
 
 <!-- =================== OFFERTES =================== -->
@@ -956,6 +971,52 @@ document.getElementById('o-save').addEventListener('click',function(){
   var naam=document.getElementById('o-naam').value.trim();if(!naam){alert('Vul een klantnaam in.');return;}
   var obj={id:editState.offerte||Date.now(),nr:editState.offerte?DB.offertes.filter(function(x){return x.id===editState.offerte;})[0].nr:pad('OFR','OFR-',DB.nrs.o++),naam:naam,email:document.getElementById('o-email').value.trim(),tel:document.getElementById('o-tel').value.trim(),bedrag:parseFloat(document.getElementById('o-bedrag').value)||0,datum:document.getElementById('o-datum').value,geldig:document.getElementById('o-geldig').value,status:document.getElementById('o-status').value,notities:document.getElementById('o-notities').value.trim()};
   if(editState.offerte)DB.offertes=DB.offertes.map(function(x){return x.id===editState.offerte?obj:x;});else DB.offertes.push(obj);
+
+  // ===== AUTOMATISCH KLANT + ORDER AANMAKEN ALS STATUS AKKOORD =====
+  if(obj.status === 'akkoord') {
+
+    // 1. KLANT AANMAKEN
+    var bestaatAl = DB.klanten && DB.klanten.some(function(k){
+      return k.naam.toLowerCase() === obj.naam.toLowerCase() ||
+             (obj.email && k.email && k.email.toLowerCase() === obj.email.toLowerCase());
+    });
+    if(!bestaatAl) {
+      if(!DB.klanten) DB.klanten = [];
+      DB.klanten.push({
+        id: Date.now() + Math.random()*1000,
+        naam: obj.naam,
+        email: obj.email || '',
+        tel: obj.tel || '',
+        notities: 'Klant aangemaakt via offerte ' + obj.nr,
+        aangemaakt: new Date().toISOString().split('T')[0],
+      });
+    }
+
+    // 2. ORDER AANMAKEN — check of er al een order is voor deze offerte
+    var orderBestaatAl = DB.orders && DB.orders.some(function(o){
+      return o.offerteNr === obj.nr;
+    });
+    if(!orderBestaatAl) {
+      if(!DB.orders) DB.orders = [];
+      var nieuwOrderId = Date.now() + Math.random()*1000;
+      DB.orders.push({
+        id: nieuwOrderId,
+        nr: 'ORD-' + obj.nr.replace('OFR-',''),
+        naam: obj.naam,
+        email: obj.email || '',
+        tel: obj.tel || '',
+        bedrag: obj.bedrag || 0,
+        datum: new Date().toISOString().split('T')[0],
+        status: 'nieuw',
+        notities: 'Order aangemaakt vanuit offerte ' + obj.nr + (obj.notities ? ' — ' + obj.notities : ''),
+        offerteNr: obj.nr,
+      });
+      if(window.toonMelding) toonMelding('✓ '+obj.naam+' → klant aangemaakt + order aangemaakt', 4000);
+    } else {
+      if(window.toonMelding) toonMelding('✓ '+obj.naam+' → offerte akkoord (order bestond al)', 3000);
+    }
+  }
+
   save();document.getElementById('ov-offerte').classList.remove('open');renderOffertes();renderHome();
 });
 
@@ -3343,13 +3404,14 @@ var check = setInterval(function(){
 
   function toonMelding(tekst, duur){
     var m = document.createElement('div');
-    m.style.cssText='position:fixed;top:20px;right:20px;background:var(--g);color:#fff;padding:14px 20px;border-radius:14px;font-size:13px;z-index:9999;font-family:DM Mono,monospace;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:400px;line-height:1.4';
+    m.style.cssText="position:fixed;top:20px;right:20px;background:var(--g);color:#fff;padding:14px 20px;border-radius:14px;font-size:13px;z-index:9999;font-family:DM Mono,monospace;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:400px;line-height:1.4";
     m.textContent = tekst;
     document.body.appendChild(m);
     setTimeout(function(){m.remove();}, duur||3000);
   }
   window.toonMelding = toonMelding;
 
+}, 300);
 })();
 </script>
 <script>
@@ -3883,7 +3945,7 @@ var check = setInterval(function(){
   var bulkPage = document.createElement('div');
   bulkPage.className = 'page';
   bulkPage.id = 'page-bulkroute';
-  bulkPage.innerHTML = '<div class="topbar"><div><div class="page-title">Route generator</div><div class="page-sub">Plak al je orders in één keer — routes worden automatisch berekend</div></div><div class="topbar-right"><button class="btn-out" id="bg-voorbeeld">Voorbeeld</button><button class="btn-out" id="bg-clear">Wissen</button><button class="btn" id="bg-bereken" style="font-size:13px;padding:10px 22px">⚡ Bereken routes</button></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px"><div class="card"><div class="card-body" style="display:flex;align-items:center;gap:14px"><div style="flex:1"><div style="font-size:11px;font-weight:500;color:#2a4fa0;margin-bottom:3px">🚐 Volkswagen — 460×215×230 cm</div><div style="background:var(--bg3);border-radius:4px;height:7px;overflow:hidden"><div id="bg-balk-vw" style="height:100%;background:#2a4fa0;border-radius:4px;width:0%;transition:width .5s"></div></div><div style="font-size:10px;color:var(--mu);margin-top:3px" id="bg-txt-vw">Gem. 0% vol per dag</div></div><div style="flex:1"><div style="font-size:11px;font-weight:500;color:#854F0B;margin-bottom:3px">🚛 Ford — 410×208×230 cm</div><div style="background:var(--bg3);border-radius:4px;height:7px;overflow:hidden"><div id="bg-balk-ford" style="height:100%;background:#854F0B;border-radius:4px;width:0%;transition:width .5s"></div></div><div style="font-size:10px;color:var(--mu);margin-top:3px" id="bg-txt-ford">Gem. 0% vol per dag</div></div></div></div><div class="card"><div class="card-body" id="bg-stats" style="font-size:12px;color:var(--mu);display:flex;flex-wrap:wrap;gap:16px;align-items:center"><span>Plak je orders en klik Bereken routes</span></div></div></div><div style="display:grid;grid-template-columns:1fr 1.8fr;gap:20px"><div><div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Orders invoeren</div><div style="font-size:11px;color:var(--mu);background:var(--bg2);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);line-height:1.6">Plak je orders precies zoals je ze hebt — inclusief ordernummers, producten, namen, adressen. Het systeem herkent alles automatisch.<br><br><strong>Herkent automatisch:</strong> ordernummer, afmetingen (LxBxH), postcode, naam, telefoon.<br><strong>AFHAAL</strong> orders worden automatisch overgeslagen.</div><textarea id="bg-invoer" rows="28" placeholder="WEBORDER 44280&#10;4x 100x100x50 Antraciet&#10;Ellen de Vries-Maas&#10;Bunder, 30&#10;Soest, 3763 WC&#10;Nederland&#10;0621256492&#10;€1216 Incl.&#10;&#10;21308&#10;5x 60x60x60 Beige&#10;Emiel Vergeer&#10;..." style="width:100%;padding:12px;border:1px solid var(--bd);border-radius:var(--rl);font-size:11px;font-family:DM Mono,monospace;background:var(--bg);color:var(--tx);resize:vertical;line-height:1.5;outline:none"></textarea><div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--mu)"><span id="bg-teller">0 orders herkend</span><span id="bg-vol-totaal"></span></div></div><div><div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Routes</div><div id="bg-resultaat"><div style="padding:60px;text-align:center;color:var(--mu);background:var(--bg);border:1px solid var(--bd);border-radius:var(--rl)"><div style="font-size:32px;margin-bottom:12px">⚡</div><div style="font-size:14px;font-weight:500;margin-bottom:6px">Plak orders links → klik Bereken routes</div><div style="font-size:12px">Werkt met jullie standaard orderformat — gewoon plakken</div></div></div></div></div>';
+  bulkPage.innerHTML = '<div class="topbar"><div><div class="page-title">Route generator</div><div class="page-sub">Plak al je orders in één keer — routes worden automatisch berekend</div></div><div class="topbar-right"><button class="btn-out" id="bg-voorbeeld">Voorbeeld</button><button class="btn-out" id="bg-clear">Wissen</button><button class="btn" id="bg-bereken" style="font-size:13px;padding:10px 22px">⚡ Bereken routes</button></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px"><div class="card"><div class="card-body" style="display:flex;align-items:center;gap:14px"><div style="flex:1"><div style="font-size:11px;font-weight:500;color:#2a4fa0;margin-bottom:3px">🚐 Volkswagen — 460×215×230 cm</div><div style="background:var(--bg3);border-radius:4px;height:7px;overflow:hidden"><div id="bg-balk-vw" style="height:100%;background:#2a4fa0;border-radius:4px;width:0%;transition:width .5s"></div></div><div style="font-size:10px;color:var(--mu);margin-top:3px" id="bg-txt-vw">Gem. 0% vol per dag</div></div><div style="flex:1"><div style="font-size:11px;font-weight:500;color:#854F0B;margin-bottom:3px">🚛 Ford — 410×208×230 cm</div><div style="background:var(--bg3);border-radius:4px;height:7px;overflow:hidden"><div id="bg-balk-ford" style="height:100%;background:#854F0B;border-radius:4px;width:0%;transition:width .5s"></div></div><div style="font-size:10px;color:var(--mu);margin-top:3px" id="bg-txt-ford">Gem. 0% vol per dag</div></div></div></div><div class="card"><div class="card-body" id="bg-stats" style="font-size:12px;color:var(--mu);display:flex;flex-wrap:wrap;gap:16px;align-items:center"><span>Plak je orders en klik Bereken routes</span></div></div></div><div style="display:grid;grid-template-columns:1fr 1.8fr;gap:20px"><div><div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Orders invoeren</div><div style="font-size:11px;color:var(--mu);background:var(--bg2);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);line-height:1.6">Plak je orders precies zoals je ze hebt — inclusief ordernummers, producten, namen, adressen. Het systeem herkent alles automatisch.<br><br><strong>Herkent automatisch:</strong> ordernummer, afmetingen (LxBxH), postcode, naam, telefoon.<br><strong>AFHAAL</strong> orders worden automatisch overgeslagen.</div><textarea id="bg-invoer" rows="28" placeholder="WEBORDER 44280&#10;4x 100x100x50 Antraciet&#10;Ellen de Vries-Maas&#10;Bunder, 30&#10;Soest, 3763 WC&#10;Nederland&#10;0621256492&#10;€1216 Incl.&#10;&#10;21308&#10;5x 60x60x60 Beige&#10;Emiel Vergeer&#10;..." style="width:100%;padding:12px;border:1px solid var(--bd);border-radius:var(--rl);font-size:11px;font-family:DM Mono,monospace;background:var(--bg);color:var(--tx);resize:vertical;line-height:1.5;outline:none"></textarea><div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--mu)"><span id="bg-teller">0 orders herkend</span><span id="bg-vol-totaal"></span></div></div><div><div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Routes</div><div id="bg-weekoverzicht" style="display:none;margin-bottom:16px"></div><div id="bg-resultaat"><div style="padding:60px;text-align:center;color:var(--mu);background:var(--bg);border:1px solid var(--bd);border-radius:var(--rl)"><div style="font-size:32px;margin-bottom:12px">⚡</div><div style="font-size:14px;font-weight:500;margin-bottom:6px">Plak orders links → klik Bereken routes</div><div style="font-size:12px">Werkt met jullie standaard orderformat — gewoon plakken</div></div></div></div></div></div>';
   document.querySelector('.main').appendChild(bulkPage);
 
   var VW_VOL   = 460*215*230;  // 22,747,000 cm³
@@ -4482,6 +4544,13 @@ var check = setInterval(function(){
 
     el.innerHTML = html;
 
+    // Update weekoverzicht als datum wijzigt
+    document.querySelectorAll('input[type="date"][id^="bg-datum-"]').forEach(function(inp) {
+      inp.addEventListener('change', function() {
+        renderWeekOverzicht(routes);
+      });
+    });
+
     // Opslaan handlers
     document.querySelectorAll('.bg-opslaan').forEach(function(b) {
       b.addEventListener('click', function() {
@@ -4507,6 +4576,54 @@ var check = setInterval(function(){
     });
   }
 
+  // ===== WEEKOVERZICHT =====
+  function renderWeekOverzicht(routes) {
+    var el = document.getElementById('bg-weekoverzicht');
+    if(!el) return;
+    if(!routes || !routes.length) { el.style.display='none'; return; }
+
+    var DAGEN = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+
+    // Maak een weekkaart — één rij per dag
+    var html = '<div class="card" style="margin-bottom:0">';
+    html += '<div class="card-hdr" style="background:#111;border-radius:var(--rl) var(--rl) 0 0"><div class="card-title" style="color:#fff">📅 Weekoverzicht — '+routes.length+' route dagen</div></div>';
+    html += '<div class="card-body" style="padding:0">';
+    html += '<table style="width:100%"><thead><tr>';
+    html += '<th>Dag</th><th>Datum</th><th>🚐 VW stops</th><th>🚛 Ford stops</th><th>Totaal bakken</th><th>Volume VW</th><th>Volume Ford</th><th>Status</th>';
+    html += '</tr></thead><tbody>';
+
+    routes.forEach(function(dag, di) {
+      var totBakken = telBakken(dag.vw) + telBakken(dag.ford);
+      var pVW = Math.round(dag.volVW / VW_VOL * 100);
+      var pFord = Math.round(dag.volFord / FORD_VOL * 100);
+      var datumInput = document.getElementById('bg-datum-'+di);
+      var datum = datumInput ? datumInput.value : '';
+      var dagNaam = datum ? DAGEN[new Date(datum).getDay()] : 'Dag '+(di+1);
+      var datumTxt = datum ? new Date(datum).toLocaleDateString('nl-NL', {day:'numeric',month:'short'}) : '—';
+      var opgeslagen = datumInput && datumInput.closest('.card') && datumInput.closest('.card').querySelector('.bg-opslaan') && datumInput.closest('.card').querySelector('.bg-opslaan').textContent.includes('✓');
+
+      // Kleur op basis van hoe vol
+      var volKleur = (pVW > 85 || pFord > 85) ? 'var(--g)' : (pVW > 50 || pFord > 50) ? 'var(--amber)' : 'var(--mu)';
+
+      html += '<tr style="border-bottom:1px solid var(--bd)">';
+      html += '<td style="font-weight:500">'+dagNaam+'</td>';
+      html += '<td style="color:var(--mu);font-size:11px">'+datumTxt+'</td>';
+      html += '<td style="text-align:center"><span style="font-weight:500;color:#2a4fa0">'+dag.vw.length+'</span> <span style="font-size:10px;color:var(--mu)">stops</span></td>';
+      html += '<td style="text-align:center"><span style="font-weight:500;color:#854F0B">'+dag.ford.length+'</span> <span style="font-size:10px;color:var(--mu)">stops</span></td>';
+      html += '<td style="text-align:center;font-weight:500">'+totBakken+'</td>';
+      // VW volume balk
+      html += '<td><div style="display:flex;align-items:center;gap:6px"><div style="width:60px;background:var(--bg3);border-radius:3px;height:6px"><div style="width:'+pVW+'%;height:100%;background:#2a4fa0;border-radius:3px"></div></div><span style="font-size:10px;color:#2a4fa0">'+pVW+'%</span></div></td>';
+      // Ford volume balk
+      html += '<td><div style="display:flex;align-items:center;gap:6px"><div style="width:60px;background:var(--bg3);border-radius:3px;height:6px"><div style="width:'+pFord+'%;height:100%;background:#854F0B;border-radius:3px"></div></div><span style="font-size:10px;color:#854F0B">'+pFord+'%</span></div></td>';
+      html += '<td><span class="badge '+(datum?'groen':'grijs')+'">'+(datum?'Ingepland':'Geen datum')+'</span></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div></div>';
+    el.innerHTML = html;
+    el.style.display = 'block';
+  }
+
   // ===== KNOPPEN =====
   document.getElementById('bg-bereken').addEventListener('click', function() {
     var tekst = document.getElementById('bg-invoer').value.trim();
@@ -4515,6 +4632,7 @@ var check = setInterval(function(){
     if(!orders.length) { alert('Geen orders herkend. Controleer of je orders producten hebben (LxBxH formaat).'); return; }
     var routes = berekenRoutes(orders);
     renderResultaat(routes, orders.length);
+    renderWeekOverzicht(routes);
     if(window.toonMelding) toonMelding('✓ '+orders.length+' orders verdeeld over '+routes.length+' dag(en)', 3000);
   });
 
@@ -5134,5 +5252,443 @@ var check = setInterval(function() {
 
 }, 400);
 
+})();
+</script>
+<script>
+// ===== WEEKPLANNING =====
+(function(){
+
+var weekOffset = 0; // 0 = huidige week, -1 = vorige week, 1 = volgende week
+
+function getMaandag(offset) {
+  var d = new Date();
+  var dag = d.getDay();
+  var diff = (dag === 0 ? -6 : 1 - dag); // maandag
+  d.setDate(d.getDate() + diff + (offset * 7));
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function datStr(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function dagNaam(d) {
+  return ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'][d.getDay()];
+}
+
+function dagKort(d) {
+  return ['Zo','Ma','Di','Wo','Do','Vr','Za'][d.getDay()];
+}
+
+function renderWeekplanning() {
+  var el = document.getElementById('week-grid');
+  var sub = document.getElementById('week-sub');
+  if(!el) return;
+
+  var maandag = getMaandag(weekOffset);
+  var zondag = new Date(maandag); zondag.setDate(zondag.getDate() + 6);
+  var vandaag = datStr(new Date());
+
+  // Week label
+  var opties = {day:'numeric', month:'long'};
+  sub.textContent = maandag.toLocaleDateString('nl-NL', opties) + ' — ' + zondag.toLocaleDateString('nl-NL', opties);
+
+  var html = '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px">';
+
+  // Maandag t/m zaterdag
+  for(var i=0; i<6; i++) {
+    var dag = new Date(maandag);
+    dag.setDate(dag.getDate() + i);
+    var datum = datStr(dag);
+    var isVandaag = datum === vandaag;
+    var isWeekend = dag.getDay() === 6;
+
+    // Bezorgingen voor deze dag
+    var bezorgingen = (DB.bezorg||[]).filter(function(b){ return b.datum === datum; });
+    var vwStops = bezorgingen.filter(function(b){ return b.wagen && b.wagen.includes('Volkswagen'); });
+    var fordStops = bezorgingen.filter(function(b){ return b.wagen && b.wagen.includes('Ford'); });
+    var gedaan = bezorgingen.filter(function(b){ return b.gedaan; }).length;
+
+    // Productielijst voor deze dag — kijk welke route dagen bezorgd worden op deze datum
+    var prodItems = [];
+    if(DB.prodlijst && DB.prodlijst.items) {
+      // Koppel via bezorgingen die vanuit productielijst komen
+      var vanProd = bezorgingen.filter(function(b){ return b.vanProdlijst; });
+      vanProd.forEach(function(b){
+        var dagId = b.vanProdlijst;
+        var items = DB.prodlijst.items.filter(function(it){ return it.dag === dagId; });
+        items.forEach(function(it){
+          if(!prodItems.find(function(x){ return x.id === it.id; })) prodItems.push(it);
+        });
+      });
+    }
+
+    var totaalBakken = prodItems.reduce(function(s,it){ return s+it.aantal; }, 0);
+    var klaar = prodItems.filter(function(it){ return it.gebouwd; }).length;
+    var afgekeurd = prodItems.filter(function(it){ return it.afgekeurd; }).length;
+    var totProd = prodItems.length;
+
+    // Waarschuwingen
+    var warnings = [];
+    if(bezorgingen.length > 12) warnings.push('⚠️ Veel stops');
+    if(afgekeurd > 0) warnings.push('🔴 '+afgekeurd+' afgekeurd');
+
+    // Dag kaart
+    html += '<div style="background:var(--bg);border:2px solid '+(isVandaag?'var(--g)':'var(--bd)')+';border-radius:var(--rl);overflow:hidden">';
+
+    // Header
+    html += '<div style="background:'+(isVandaag?'var(--g)':isWeekend?'#f5f5f0':'#111')+';padding:10px 12px">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between">';
+    html += '<div style="font-weight:500;font-size:13px;color:#fff">'+dagNaam(dag)+'</div>';
+    html += '<div style="font-size:11px;color:rgba(255,255,255,0.7)">'+dag.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})+'</div>';
+    html += '</div>';
+    if(bezorgingen.length > 0) {
+      html += '<div style="margin-top:4px;font-size:10px;color:rgba(255,255,255,0.8)">'+bezorgingen.length+' stops · '+gedaan+'/'+bezorgingen.length+' gedaan</div>';
+    }
+    html += '</div>';
+
+    html += '<div style="padding:10px 12px">';
+
+    if(bezorgingen.length === 0 && prodItems.length === 0) {
+      html += '<div style="color:var(--mu);font-size:11px;text-align:center;padding:16px 0">Vrij</div>';
+    } else {
+
+      // Wagens
+      if(bezorgingen.length > 0) {
+        html += '<div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Bezorging</div>';
+        if(vwStops.length) {
+          var vwGedaan = vwStops.filter(function(b){return b.gedaan;}).length;
+          html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px">';
+          html += '<span style="color:#2a4fa0;font-weight:500">🚐 VW</span>';
+          html += '<span style="color:var(--mu)">'+vwStops.length+' stops</span>';
+          if(vwGedaan > 0) html += '<span style="color:var(--g);margin-left:auto">'+vwGedaan+'/'+vwStops.length+' ✓</span>';
+          html += '</div>';
+          // Progress balk VW
+          html += '<div style="background:var(--bg3);border-radius:3px;height:4px;margin-bottom:6px"><div style="width:'+(vwGedaan/vwStops.length*100)+'%;height:100%;background:#2a4fa0;border-radius:3px"></div></div>';
+        }
+        if(fordStops.length) {
+          var fordGedaan = fordStops.filter(function(b){return b.gedaan;}).length;
+          html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px">';
+          html += '<span style="color:#854F0B;font-weight:500">🚛 Ford</span>';
+          html += '<span style="color:var(--mu)">'+fordStops.length+' stops</span>';
+          if(fordGedaan > 0) html += '<span style="color:var(--g);margin-left:auto">'+fordGedaan+'/'+fordStops.length+' ✓</span>';
+          html += '</div>';
+          html += '<div style="background:var(--bg3);border-radius:3px;height:4px;margin-bottom:6px"><div style="width:'+(fordGedaan/fordStops.length*100)+'%;height:100%;background:#854F0B;border-radius:3px"></div></div>';
+        }
+      }
+
+      // Productielijst
+      if(prodItems.length > 0) {
+        html += '<div style="border-top:1px solid var(--bd);margin:8px 0"></div>';
+        html += '<div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Productie</div>';
+        html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">';
+        html += '<span style="font-size:11px;color:var(--tx)">'+totaalBakken+' bakken</span>';
+        html += '<span style="font-size:10px;color:var(--mu)">· '+klaar+'/'+totProd+' gebouwd</span>';
+        if(afgekeurd > 0) html += '<span style="font-size:10px;color:var(--red);margin-left:auto">🔴 '+afgekeurd+'</span>';
+        html += '</div>';
+        // Progress balk productie
+        html += '<div style="background:var(--bg3);border-radius:3px;height:4px">';
+        html += '<div style="width:'+(totProd?klaar/totProd*100:0)+'%;height:100%;background:var(--g);border-radius:3px"></div>';
+        html += '</div>';
+      }
+
+      // Waarschuwingen
+      if(warnings.length) {
+        html += '<div style="margin-top:8px;display:flex;flex-direction:column;gap:3px">';
+        warnings.forEach(function(w){
+          html += '<div style="font-size:10px;background:var(--red-l);color:var(--red);padding:3px 7px;border-radius:4px">'+w+'</div>';
+        });
+        html += '</div>';
+      }
+    }
+
+    html += '</div></div>'; // einde kaart
+  }
+
+  html += '</div>';
+
+  // Openstaande orders zonder datum
+  var zonderDatum = (DB.orders||[]).filter(function(o){ return !o.leverdatum && o.status !== 'bezorgd' && o.status !== 'geannuleerd'; });
+  if(zonderDatum.length) {
+    html += '<div class="card" style="margin-top:16px">';
+    html += '<div class="card-hdr" style="background:#111"><div class="card-title" style="color:#fff">⏳ Orders zonder bezorgdatum ('+zonderDatum.length+')</div></div>';
+    html += '<div class="card-body" style="padding:0"><table><thead><tr><th>Order</th><th>Klant</th><th>Bedrag</th><th>Status</th></tr></thead><tbody>';
+    zonderDatum.forEach(function(o){
+      html += '<tr><td style="font-weight:500">'+(o.nr||'—')+'</td><td>'+o.naam+'</td><td style="color:var(--g)">€'+(o.bedrag||0)+'</td><td><span class="badge '+(o.status==='nieuw'?'amber':'grijs')+'">'+o.status+'</span></td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// Navigatie knoppen
+var check = setInterval(function(){
+  if(!document.getElementById('week-vorige')) return;
+  clearInterval(check);
+
+  document.getElementById('week-vorige').addEventListener('click', function(){
+    weekOffset--; renderWeekplanning();
+  });
+  document.getElementById('week-volgende').addEventListener('click', function(){
+    weekOffset++; renderWeekplanning();
+  });
+  document.getElementById('week-vandaag').addEventListener('click', function(){
+    weekOffset = 0; renderWeekplanning();
+  });
+
+  // Voeg toe aan renderPage
+  var orig = window.renderPage;
+  window.renderPage = function(pg) {
+    if(orig) orig(pg);
+    if(pg === 'weekplanning') renderWeekplanning();
+  };
+
+  // Render als pagina al actief is
+  if(document.getElementById('page-weekplanning') && document.getElementById('page-weekplanning').classList.contains('active')) {
+    renderWeekplanning();
+  }
+
+}, 300);
+
+})();
+</script>
+<script>
+// ===== OMZET VERGELIJKING GRAFIEK =====
+(function(){
+
+// Data vanuit de spreadsheet
+var OMZET_DATA = {
+  2022: [0,0,0,0,0,0,0,0,7505,7740,13678,15721,11854,20314,14417,17537,8809,15080,18202,17661,13825,14145,18994,24835,26307,16086,16104,18573,10265,13063,10862,7855,13534,16830,2742,8642,8100,7148,6861,19406,6655,24081,10465,8787,7410,22467,10258,17880,0,0,0,0],
+  2023: [9923,13036,10803,14109,6802,5760,13185,16361,27709,21250,25587,18476,33445,32053,29701,30103,29010,29729,20037,24923,28255,34295,32026,33105,25590,15140,29725,27310,12370,24462,48702,0,12474,31633,19957,33167,21080,13244,17333,26312,10049,7392,46731,14038,9976,8187,23760,8872,0,0,0,0],
+  2024: [17096,9472,17120,11467,19973,23882,30320,33787,41165,48623,60062,53589,56932,69312,55362,52270,54725,51195,56211,57266,68257,48743,40797,44171,38465,69876,18758,13869,63690,28134,45562,32936,36230,38647,32835,36840,23990,32234,33847,22404,44292,19454,34810,18746,8228,47813,27511,10732,0,0,0,0],
+  2025: [1825,16013,12180,15920,19575,18545,59248,35038,32000,87430,43897,67200,57957,90077,108170,68113,60213,92405,75150,67339,68435,91015,39726,46904,53543,30841,36701,55338,22874,22874,22874,22874,43585,31560,33504,37217,43685,34290,23802,34429,17949,28574,22167,22231,34722,27421,19383,50306,0,0,0,0],
+};
+
+var check = setInterval(function(){
+  if(!document.getElementById('page-omzet')) return;
+  clearInterval(check);
+
+  // Voeg grafiek container toe aan omzet pagina
+  var omzetPage = document.getElementById('page-omzet');
+  var grafiekDiv = document.createElement('div');
+  grafiekDiv.id = 'omzet-vergelijking';
+  grafiekDiv.style.cssText = 'margin-top:20px';
+
+  grafiekDiv.innerHTML = `
+    <div class="card">
+      <div class="card-hdr" style="background:#111;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div class="card-title" style="color:#fff">📈 Jaaroverzicht — weekvergelijking</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,0.7);cursor:pointer"><input type="checkbox" id="tog-2022" style="accent-color:#94a3b8"> 2022</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,0.7);cursor:pointer"><input type="checkbox" id="tog-2023" style="accent-color:#f59e0b"> 2023</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,0.7);cursor:pointer"><input type="checkbox" id="tog-2024" style="accent-color:#3b82f6"> 2024</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,0.7);cursor:pointer"><input type="checkbox" id="tog-2025" checked style="accent-color:#a78bfa"> 2025</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,0.7);cursor:pointer"><input type="checkbox" id="tog-2026" checked style="accent-color:#2D6A2D"> 2026</label>
+        </div>
+      </div>
+      <div class="card-body">
+        <canvas id="omzet-canvas" style="width:100%;height:320px"></canvas>
+        <div id="omzet-tooltip" style="display:none;position:absolute;background:#111;color:#fff;padding:8px 12px;border-radius:8px;font-size:11px;font-family:DM Mono,monospace;pointer-events:none;z-index:999"></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px" id="omzet-jaar-stats"></div>
+  `;
+
+  // Voeg toe voor of na de bestaande content
+  var bestaand = omzetPage.querySelector('.card');
+  if(bestaand) {
+    omzetPage.insertBefore(grafiekDiv, bestaand);
+  } else {
+    omzetPage.appendChild(grafiekDiv);
+  }
+
+  var KLEUREN = {
+    2022: '#94a3b8',
+    2023: '#f59e0b',
+    2024: '#3b82f6',
+    2025: '#a78bfa',
+    2026: '#2D6A2D',
+  };
+
+  function getZichtbaar() {
+    var jaren = [];
+    [2022,2023,2024,2025,2026].forEach(function(j){
+      var tog = document.getElementById('tog-'+j);
+      if(tog && tog.checked) jaren.push(j);
+    });
+    return jaren;
+  }
+
+  function get2026Data() {
+    // Haal 2026 data op uit DB (handmatig ingevoerd)
+    var data = new Array(52).fill(0);
+    if(DB.omzet) {
+      DB.omzet.forEach(function(entry) {
+        if(!entry.datum) return;
+        var d = new Date(entry.datum);
+        var week = getWeekNr(d);
+        if(week >= 1 && week <= 52) {
+          data[week-1] += Number(entry.bedrag) || 0;
+        }
+      });
+    }
+    return data;
+  }
+
+  function getWeekNr(d) {
+    var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    var dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    var yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+  }
+
+  function tekenGrafiek() {
+    var canvas = document.getElementById('omzet-canvas');
+    if(!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.offsetWidth;
+    var H = 320;
+    canvas.width = W;
+    canvas.height = H;
+
+    var jaren = getZichtbaar();
+    var alleData = jaren.map(function(j){
+      return j === 2026 ? get2026Data() : (OMZET_DATA[j] || new Array(52).fill(0));
+    });
+
+    var maxVal = 0;
+    alleData.forEach(function(d){ d.forEach(function(v){ if(v > maxVal) maxVal = v; }); });
+    maxVal = Math.ceil(maxVal / 10000) * 10000;
+
+    var padL = 70, padR = 20, padT = 20, padB = 40;
+    var grafW = W - padL - padR;
+    var grafH = H - padT - padB;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid lijnen
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    for(var g=0; g<=5; g++) {
+      var y = padT + grafH - (g/5 * grafH);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+grafW, y); ctx.stroke();
+      ctx.fillStyle = '#888';
+      ctx.font = '10px DM Mono,monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('€'+(g/5*maxVal/1000).toFixed(0)+'K', padL-6, y+3);
+    }
+
+    // Week labels
+    ctx.fillStyle = '#aaa';
+    ctx.font = '9px DM Mono,monospace';
+    ctx.textAlign = 'center';
+    [1,5,10,15,20,25,30,35,40,45,52].forEach(function(w){
+      var x = padL + ((w-1)/51 * grafW);
+      ctx.fillText('W'+w, x, H-padB+14);
+    });
+
+    // Huidige week lijn
+    var now = new Date();
+    var huidig = getWeekNr(now);
+    if(now.getFullYear() === 2026 && huidig >= 1 && huidig <= 52) {
+      var xNow = padL + ((huidig-1)/51 * grafW);
+      ctx.strokeStyle = 'rgba(45,106,45,0.3)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(xNow, padT); ctx.lineTo(xNow, padT+grafH); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(45,106,45,0.7)';
+      ctx.font = '9px DM Mono,monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Nu', xNow, padT-4);
+    }
+
+    // Lijnen per jaar
+    jaren.forEach(function(jaar, ji) {
+      var data = alleData[ji];
+      var kleur = KLEUREN[jaar];
+      ctx.strokeStyle = kleur;
+      ctx.lineWidth = jaar === 2026 ? 2.5 : 1.5;
+      ctx.globalAlpha = jaar === 2026 ? 1 : 0.7;
+      ctx.beginPath();
+      var eerste = true;
+      data.forEach(function(v, i) {
+        if(v === 0 && jaar !== 2026) return; // skip lege weken historisch
+        var x = padL + (i/51 * grafW);
+        var y = padT + grafH - (v/maxVal * grafH);
+        if(eerste) { ctx.moveTo(x, y); eerste = false; }
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Jaar label rechts
+      var lastIdx = data.length - 1;
+      while(lastIdx > 0 && data[lastIdx] === 0) lastIdx--;
+      if(lastIdx >= 0 && data[lastIdx] > 0) {
+        var lx = padL + (lastIdx/51 * grafW);
+        var ly = padT + grafH - (data[lastIdx]/maxVal * grafH);
+        ctx.fillStyle = kleur;
+        ctx.font = 'bold 10px DM Mono,monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(jaar, lx+4, ly+3);
+      }
+    });
+
+    // Jaar statistieken
+    renderJaarStats(jaren, alleData);
+  }
+
+  function renderJaarStats(jaren, alleData) {
+    var el = document.getElementById('omzet-jaar-stats');
+    if(!el) return;
+    el.innerHTML = jaren.map(function(jaar, ji) {
+      var data = alleData[ji];
+      var totaal = data.reduce(function(s,v){return s+v;},0);
+      var weken = data.filter(function(v){return v>0;}).length;
+      var gem = weken ? Math.round(totaal/weken) : 0;
+      var kleur = KLEUREN[jaar];
+      return '<div class="card"><div class="card-body" style="text-align:center">' +
+        '<div style="width:12px;height:12px;border-radius:50%;background:'+kleur+';margin:0 auto 6px"></div>' +
+        '<div style="font-size:11px;color:var(--mu);margin-bottom:4px">'+jaar+'</div>' +
+        '<div style="font-size:18px;font-weight:500">€'+Math.round(totaal/1000)+'K</div>' +
+        '<div style="font-size:10px;color:var(--mu);margin-top:2px">gem. €'+gem.toLocaleString('nl-NL')+'/week</div>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  // Toggle listeners
+  [2022,2023,2024,2025,2026].forEach(function(j){
+    var tog = document.getElementById('tog-'+j);
+    if(tog) tog.addEventListener('change', tekenGrafiek);
+  });
+
+  // Teken als omzet pagina actief wordt
+  var origRenderPage = window.renderPage;
+  window.renderPage = function(pg) {
+    if(origRenderPage) origRenderPage(pg);
+    if(pg === 'omzet') {
+      setTimeout(tekenGrafiek, 100);
+    }
+  };
+
+  // Teken meteen als pagina al actief is
+  if(document.getElementById('page-omzet') && document.getElementById('page-omzet').classList.contains('active')) {
+    setTimeout(tekenGrafiek, 200);
+  }
+
+  // Herteken als DB.omzet wijzigt
+  var origSave = window.save;
+  window.save = function() {
+    if(origSave) origSave();
+    if(document.getElementById('page-omzet') && document.getElementById('page-omzet').classList.contains('active')) {
+      setTimeout(tekenGrafiek, 100);
+    }
+  };
+
+}, 400);
 })();
 </script>
