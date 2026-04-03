@@ -161,6 +161,49 @@ tr:hover td{background:#fafaf8}
 </head>
 <body>
 
+<!-- WACHTWOORDSCHERM -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:#f7f7f5;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column">
+  <div style="background:#fff;border:1px solid rgba(0,0,0,0.11);border-radius:16px;padding:40px 48px;width:min(420px,90%);text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+    <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#2D6A2D;margin-bottom:4px">Sev Plantenbakken</div>
+    <div style="font-size:11px;color:#888;margin-bottom:28px">Bedrijfsdashboard</div>
+    <div style="font-size:12px;color:#888;text-align:left;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Wachtwoord</div>
+    <input type="password" id="login-input" placeholder="Voer wachtwoord in" style="width:100%;padding:11px 14px;border:1px solid rgba(0,0,0,0.15);border-radius:10px;font-size:14px;font-family:DM Mono,monospace;outline:none;margin-bottom:12px;box-sizing:border-box;background:#f7f7f5" onkeydown="if(event.key==='Enter')checkLogin()">
+    <div id="login-error" style="color:#A32D2D;font-size:11px;margin-bottom:10px;display:none">Onjuist wachtwoord. Probeer opnieuw.</div>
+    <button onclick="checkLogin()" style="width:100%;background:#2D6A2D;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-family:DM Mono,monospace;cursor:pointer;font-weight:500">Inloggen →</button>
+    <div style="margin-top:20px;font-size:10px;color:#bbb">Alleen voor medewerkers van Sev Plantenbakken</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var WACHTWOORD = 'Sev2024!';
+  var SESSION_KEY = 'sev_auth';
+
+  function checkLogin() {
+    var input = document.getElementById('login-input').value;
+    var error = document.getElementById('login-error');
+    if(input === WACHTWOORD) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('login-screen').style.display = 'none';
+      error.style.display = 'none';
+    } else {
+      error.style.display = 'block';
+      document.getElementById('login-input').value = '';
+      document.getElementById('login-input').focus();
+    }
+  }
+  window.checkLogin = checkLogin;
+
+  // Check bij laden
+  if(sessionStorage.getItem(SESSION_KEY) !== '1') {
+    document.getElementById('login-screen').style.display = 'flex';
+    setTimeout(function(){ document.getElementById('login-input').focus(); }, 100);
+  } else {
+    document.getElementById('login-screen').style.display = 'none';
+  }
+})();
+</script>
+
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="logo">
