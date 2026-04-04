@@ -228,6 +228,7 @@ tr:hover td{background:#fafaf8}
     </div>
     <button class="nav-item" data-page="productie"><span class="nav-icon">🔧</span>Voorraad</button>
     <button class="nav-item" data-page="klanten"><span class="nav-icon">👥</span>Klanten</button>
+    <button class="nav-item" data-page="agents"><span class="nav-icon">🤖</span>Agents</button>
     <button class="nav-item" data-page="social"><span class="nav-icon">📱</span>Social media</button>
   </nav>
   <div class="sidebar-footer" id="opgeslagen">Data opgeslagen in browser</div>
@@ -378,6 +379,20 @@ tr:hover td{background:#fafaf8}
     <thead><tr><th>Naam</th><th>E-mail</th><th>Telefoon</th><th>Type</th><th>Orders</th><th>Totaal besteed</th><th>Notities</th><th>Acties</th></tr></thead>
     <tbody id="klant-tbody"></tbody>
   </table></div>
+</div>
+
+<!-- =================== AGENTS =================== -->
+<div class="page" id="page-agents">
+  <div class="topbar" style="background:linear-gradient(135deg,#1a0a2e,#2d1054);border-radius:var(--rl);padding:20px 24px;margin-bottom:24px">
+    <div>
+      <div class="page-title" style="color:#fff;font-size:24px">🤖 Agent Hub</div>
+      <div class="page-sub" style="color:rgba(255,255,255,0.6)">Bouw teams van agents per afdeling — automatiseer je bedrijf</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn" id="agent-new" style="background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;box-shadow:0 4px 14px rgba(124,58,237,0.4)">+ Agent toevoegen</button>
+    </div>
+  </div>
+  <div id="agents-grid"></div>
 </div>
 
 <!-- =================== SOCIAL =================== -->
@@ -5690,5 +5705,415 @@ var check = setInterval(function(){
   };
 
 }, 400);
+})();
+</script>
+<script>
+// ===== AGENT HUB =====
+(function(){
+
+// Standaard afdelingen met hun kleur en agents
+var DEFAULT_TEAMS = [
+  {
+    id: 'marketing',
+    naam: 'Marketing & Social',
+    icon: '📱',
+    kleur: '#7c3aed',
+    agents: [
+      { id: 'ag1', naam: 'Instagram Caption Generator', omschr: 'Schrijft automatisch een caption op basis van een foto of order', status: 'concept', icon: '📸' },
+      { id: 'ag2', naam: 'Content Kalender Planner', omschr: 'Stelt elke maandag een weekplan voor social media voor', status: 'concept', icon: '📅' },
+    ]
+  },
+  {
+    id: 'sales',
+    naam: 'Sales & Offertes',
+    icon: '💼',
+    kleur: '#059669',
+    agents: [
+      { id: 'ag3', naam: 'Offerte Generator', omschr: 'Maakt automatisch een professionele offerte + PDF op basis van klantgegevens', status: 'concept', icon: '📄' },
+      { id: 'ag4', naam: 'Offerte Opvolging', omschr: 'Stuurt na 5 dagen automatisch een opvolgmail als offerte nog open staat', status: 'concept', icon: '📧' },
+    ]
+  },
+  {
+    id: 'productie',
+    naam: 'Productie',
+    icon: '🔧',
+    kleur: '#d97706',
+    agents: [
+      { id: 'ag5', naam: 'Route Voorstel', omschr: 'Verdeelt elke week automatisch orders over routes op basis van postcode en volume', status: 'concept', icon: '🗺️' },
+      { id: 'ag6', naam: 'Schade Melding', omschr: 'Stuurt een melding naar Sten als er een afgekeurde bak is zonder besteld materiaal', status: 'concept', icon: '🔴' },
+    ]
+  },
+  {
+    id: 'finance',
+    naam: 'Financiën',
+    icon: '💶',
+    kleur: '#0ea5e9',
+    agents: [
+      { id: 'ag7', naam: 'Betalingsherinnering', omschr: 'Stuurt automatisch een herinnering als een factuur 14 dagen te laat is', status: 'concept', icon: '⏰' },
+      { id: 'ag8', naam: 'Weekrapport Omzet', omschr: 'Genereert elke vrijdag een overzicht van de week vs vorige week vs vorig jaar', status: 'concept', icon: '📊' },
+    ]
+  },
+  {
+    id: 'hr',
+    naam: 'HR & Team',
+    icon: '👥',
+    kleur: '#db2777',
+    agents: [
+      { id: 'ag9', naam: 'Dagrapport', omschr: 'Stuurt elke avond om 18:00 een samenvatting van de dag naar Sten', status: 'concept', icon: '📋' },
+    ]
+  },
+  {
+    id: 'outreach',
+    naam: 'Outreach & Nieuwe Klanten',
+    icon: '🔍',
+    kleur: '#0891b2',
+    agents: [
+      { id: 'ag10', naam: 'Marktonderzoek Agent', omschr: 'Zoekt wekelijks naar nieuwe potentiële klanten in Nederland en België — hoveniers, tuincentra, aannemers en projectontwikkelaars', status: 'concept', icon: '🌍' },
+      { id: 'ag11', naam: 'Concurrent Analyse', omschr: 'Monitort wat concurrenten doen op social media en welke producten zij promoten', status: 'concept', icon: '🔎' },
+      { id: 'ag12', naam: 'Lead Kwalificatie', omschr: 'Beoordeelt nieuwe leads op basis van bedrijfsgrootte, locatie en koopintentie — filtert de beste kansen eruit', status: 'concept', icon: '⭐' },
+      { id: 'ag13', naam: 'Koude Outreach Mail', omschr: 'Schrijft gepersonaliseerde eerste mails naar potentiële klanten op basis van hun bedrijfsprofiel', status: 'concept', icon: '📨' },
+      { id: 'ag14', naam: 'TV Effect Tracker', omschr: 'Analyseert orders en bezoekers na elke SBS6 aflevering om het effect van de TV exposure te meten', status: 'concept', icon: '📺' },
+    ]
+  },
+];
+
+var STATUS_MAP = {
+  'actief':   { label: 'Actief',   bg: '#d1fae5', kleur: '#065f46' },
+  'concept':  { label: 'Concept',  bg: '#ede9fe', kleur: '#5b21b6' },
+  'gebouwd':  { label: 'Gebouwd', bg: '#dbeafe', kleur: '#1e40af' },
+  'gepauzeerd': { label: 'Gepauzeerd', bg: '#fef3c7', kleur: '#92400e' },
+};
+
+function initAgents() {
+  if(!DB.agentTeams) {
+    DB.agentTeams = JSON.parse(JSON.stringify(DEFAULT_TEAMS));
+    save();
+  } else {
+    // Voeg nieuwe teams toe die nog niet bestaan
+    var gewijzigd = false;
+    DEFAULT_TEAMS.forEach(function(defaultTeam) {
+      var bestaatAl = DB.agentTeams.find(function(t){ return t.id === defaultTeam.id; });
+      if(!bestaatAl) {
+        DB.agentTeams.push(JSON.parse(JSON.stringify(defaultTeam)));
+        gewijzigd = true;
+      }
+    });
+    if(gewijzigd) save();
+  }
+}
+
+function renderAgents() {
+  initAgents();
+  var el = document.getElementById('agents-grid');
+  if(!el) return;
+
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px">';
+
+  DB.agentTeams.forEach(function(team) {
+    var actiefCount = team.agents.filter(function(a){ return a.status === 'actief'; }).length;
+
+    html += '<div style="background:linear-gradient(160deg,#1a0a2e 0%,#120820 100%);border:1px solid rgba(124,58,237,0.25);border-radius:16px;overflow:hidden">';
+
+    // Team header
+    html += '<div style="padding:16px 20px;border-bottom:1px solid rgba(124,58,237,0.2);display:flex;align-items:center;justify-content:space-between">';
+    html += '<div style="display:flex;align-items:center;gap:10px">';
+    html += '<div style="width:36px;height:36px;border-radius:10px;background:'+team.kleur+'22;border:1px solid '+team.kleur+'44;display:flex;align-items:center;justify-content:center;font-size:18px">'+team.icon+'</div>';
+    html += '<div>';
+    html += '<div style="font-weight:500;font-size:13px;color:#fff">'+team.naam+'</div>';
+    html += '<div style="font-size:10px;color:rgba(255,255,255,0.4)">'+team.agents.length+' agents'+(actiefCount?' · '+actiefCount+' actief':'')+'</div>';
+    html += '</div></div>';
+    html += '<button class="agent-team-add" data-team="'+team.id+'" style="background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);border-radius:8px;padding:5px 10px;font-size:11px;color:#a78bfa;cursor:pointer;font-family:DM Mono,monospace">+ Agent</button>';
+    html += '</div>';
+
+    // Agents lijst
+    html += '<div style="padding:12px">';
+
+    if(!team.agents.length) {
+      html += '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-size:12px">Nog geen agents — klik + Agent</div>';
+    } else {
+      team.agents.forEach(function(agent) {
+        var st = STATUS_MAP[agent.status] || STATUS_MAP.concept;
+        html += '<div class="agent-card" data-team="'+team.id+'" data-agent="'+agent.id+'" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'rgba(124,58,237,0.15)\'" onmouseout="this.style.background=\'rgba(255,255,255,0.04)\'">';
+        html += '<div style="display:flex;align-items:flex-start;gap:10px">';
+        html += '<div style="width:32px;height:32px;border-radius:8px;background:'+team.kleur+'22;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+agent.icon+'</div>';
+        html += '<div style="flex:1;min-width:0">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px">';
+        html += '<div style="font-weight:500;font-size:12px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+agent.naam+'</div>';
+        html += '<span style="background:'+st.bg+';color:'+st.kleur+';border-radius:20px;padding:2px 8px;font-size:9px;font-weight:500;white-space:nowrap;flex-shrink:0">'+st.label+'</span>';
+        html += '</div>';
+        html += '<div style="font-size:10px;color:rgba(255,255,255,0.45);line-height:1.4">'+agent.omschr+'</div>';
+        html += '</div></div>';
+
+        // Status knoppen + configureer
+        html += '<div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">';
+        html += '<button class="agent-status-btn" data-team="'+team.id+'" data-agent="'+agent.id+'" data-status="actief" style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(5,150,105,0.4);background:'+(agent.status==='actief'?'rgba(5,150,105,0.3)':'transparent')+';color:'+(agent.status==='actief'?'#6ee7b7':'rgba(255,255,255,0.3)')+';font-size:10px;cursor:pointer;font-family:DM Mono,monospace">▶ Actief</button>';
+        html += '<button class="agent-status-btn" data-team="'+team.id+'" data-agent="'+agent.id+'" data-status="gepauzeerd" style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(217,119,6,0.4);background:'+(agent.status==='gepauzeerd'?'rgba(217,119,6,0.3)':'transparent')+';color:'+(agent.status==='gepauzeerd'?'#fcd34d':'rgba(255,255,255,0.3)')+';font-size:10px;cursor:pointer;font-family:DM Mono,monospace">⏸ Pauze</button>';
+        html += '<button class="agent-config-btn" data-team="'+team.id+'" data-agent="'+agent.id+'" style="padding:5px 8px;border-radius:6px;border:1px solid rgba(124,58,237,0.4);background:rgba(124,58,237,0.15);color:#a78bfa;font-size:10px;cursor:pointer" title="Configureer instructies">⚙</button>';
+        html += '<button class="agent-del-btn" data-team="'+team.id+'" data-agent="'+agent.id+'" style="padding:5px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.3);font-size:10px;cursor:pointer">✕</button>';
+        html += '</div>';
+        html += '</div>';
+      });
+    }
+
+    html += '</div></div>'; // einde team kaart
+  });
+
+  html += '</div>';
+
+  // Stats banner onderaan
+  var totaalAgents = DB.agentTeams.reduce(function(s,t){ return s+t.agents.length; }, 0);
+  var actiefAgents = DB.agentTeams.reduce(function(s,t){ return s+t.agents.filter(function(a){return a.status==='actief';}).length; }, 0);
+  var conceptAgents = totaalAgents - actiefAgents;
+
+  html += '<div style="margin-top:20px;background:linear-gradient(135deg,#1a0a2e,#2d1054);border:1px solid rgba(124,58,237,0.25);border-radius:16px;padding:20px 24px;display:flex;gap:32px;align-items:center">';
+  html += '<div style="text-align:center"><div style="font-size:28px;font-weight:500;color:#a78bfa">'+totaalAgents+'</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Totaal agents</div></div>';
+  html += '<div style="text-align:center"><div style="font-size:28px;font-weight:500;color:#6ee7b7">'+actiefAgents+'</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Actief</div></div>';
+  html += '<div style="text-align:center"><div style="font-size:28px;font-weight:500;color:#c4b5fd">'+conceptAgents+'</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">In concept</div></div>';
+  html += '<div style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.3);max-width:220px;line-height:1.5">Agents worden actief zodra Firebase + Claude API gekoppeld zijn. Nu kun je ze al plannen en configureren.</div>';
+  html += '</div>';
+
+  el.innerHTML = html;
+
+  // Event listeners
+  // Status knoppen
+  document.querySelectorAll('.agent-status-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var teamId = this.getAttribute('data-team');
+      var agentId = this.getAttribute('data-agent');
+      var status = this.getAttribute('data-status');
+      var team = DB.agentTeams.find(function(t){ return t.id === teamId; });
+      if(team) {
+        var agent = team.agents.find(function(a){ return a.id === agentId; });
+        if(agent) {
+          agent.status = agent.status === status ? 'concept' : status;
+          save(); renderAgents();
+        }
+      }
+    });
+  });
+
+  // Verwijder agent
+  document.querySelectorAll('.agent-del-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var teamId = this.getAttribute('data-team');
+      var agentId = this.getAttribute('data-agent');
+      var team = DB.agentTeams.find(function(t){ return t.id === teamId; });
+      if(team) {
+        team.agents = team.agents.filter(function(a){ return a.id !== agentId; });
+        save(); renderAgents();
+      }
+    });
+  });
+
+  // Configureer agent
+  document.querySelectorAll('.agent-config-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var teamId = this.getAttribute('data-team');
+      var agentId = this.getAttribute('data-agent');
+      var team = DB.agentTeams.find(function(t){ return t.id === teamId; });
+      if(!team) return;
+      var agent = team.agents.find(function(a){ return a.id === agentId; });
+      if(!agent) return;
+      openConfigModal(teamId, agentId);
+    });
+  });
+
+  // + Agent per team
+  document.querySelectorAll('.agent-team-add').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var teamId = this.getAttribute('data-team');
+      openAgentModal(teamId);
+    });
+  });
+}
+
+// Configureer modal — schrijf instructies voor een agent
+function openConfigModal(teamId, agentId) {
+  var team = DB.agentTeams.find(function(t){ return t.id === teamId; });
+  var agent = team ? team.agents.find(function(a){ return a.id === agentId; }) : null;
+  if(!agent) return;
+
+  var bestaand = document.getElementById('ov-agent-config');
+  if(bestaand) bestaand.remove();
+
+  var ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.id = 'ov-agent-config';
+  ov.style.background = 'rgba(10,0,20,0.9)';
+  ov.innerHTML = `
+    <div class="modal" style="background:linear-gradient(160deg,#1a0a2e,#120820);border:1px solid rgba(124,58,237,0.3);color:#fff;width:min(600px,100%);max-height:90vh;overflow-y:auto">
+      <div class="modal-hdr">
+        <div>
+          <h2 style="color:#fff;font-family:'Fraunces',serif">${agent.icon} ${agent.naam}</h2>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">${team.icon} ${team.naam}</div>
+        </div>
+        <button class="close-x" data-close="ov-agent-config" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2)">&#x2715;</button>
+      </div>
+
+      <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6">
+        💡 De instructies hieronder bepalen exact wat de agent doet. Hoe specifieker, hoe beter. Denk aan: wat is de taak, welke data gebruikt hij, wat is de output en hoe vaak draait hij.
+      </div>
+
+      <div class="form-row" style="margin-bottom:13px">
+        <label style="color:rgba(255,255,255,0.5)">Naam</label>
+        <input type="text" id="config-naam" value="${agent.naam}" style="background:rgba(255,255,255,0.07);border-color:rgba(124,58,237,0.4);color:#fff">
+      </div>
+
+      <div class="form-row" style="margin-bottom:13px">
+        <label style="color:rgba(255,255,255,0.5)">Korte omschrijving</label>
+        <input type="text" id="config-omschr" value="${agent.omschr}" style="background:rgba(255,255,255,0.07);border-color:rgba(124,58,237,0.4);color:#fff">
+      </div>
+
+      <div class="form-row" style="margin-bottom:13px">
+        <label style="color:rgba(255,255,255,0.5)">Instructies (system prompt)</label>
+        <textarea id="config-instructies" rows="10" placeholder="Beschrijf hier precies wat de agent moet doen. Bijv:&#10;&#10;Jij bent een marktonderzoek agent voor Sev Plantenbakken. Jouw taak is om wekelijks nieuwe potentiële klanten te vinden zoals hoveniersbedrijven en tuincentra in Nederland en België. Je presenteert maximaal 10 leads per week met bedrijfsnaam, locatie en waarom zij interessant zijn." style="width:100%;padding:10px 12px;border:1px solid rgba(124,58,237,0.4);border-radius:var(--r);font-size:12px;font-family:'DM Mono',monospace;background:rgba(255,255,255,0.07);color:#fff;outline:none;resize:vertical;line-height:1.6">${agent.instructies||''}</textarea>
+      </div>
+
+      <div class="form-row" style="margin-bottom:13px">
+        <label style="color:rgba(255,255,255,0.5)">Hoe vaak draait deze agent?</label>
+        <select id="config-frequentie" style="background:#1a0a2e;border-color:rgba(124,58,237,0.4);color:#fff">
+          <option value="handmatig" ${(agent.frequentie||'handmatig')==='handmatig'?'selected':''}>Handmatig — ik start hem zelf</option>
+          <option value="dagelijks" ${agent.frequentie==='dagelijks'?'selected':''}>Elke dag automatisch</option>
+          <option value="wekelijks" ${agent.frequentie==='wekelijks'?'selected':''}>Elke week automatisch</option>
+          <option value="maandelijks" ${agent.frequentie==='maandelijks'?'selected':''}>Elke maand automatisch</option>
+          <option value="offerte" ${agent.frequentie==='offerte'?'selected':''}>Bij elke nieuwe offerte</option>
+          <option value="order" ${agent.frequentie==='order'?'selected':''}>Bij elke nieuwe order</option>
+        </select>
+      </div>
+
+      <div class="form-row" style="margin-bottom:20px">
+        <label style="color:rgba(255,255,255,0.5)">Output — wat geeft de agent terug?</label>
+        <select id="config-output" style="background:#1a0a2e;border-color:rgba(124,58,237,0.4);color:#fff">
+          <option value="dashboard" ${(agent.output||'dashboard')==='dashboard'?'selected':''}>Zichtbaar in dashboard</option>
+          <option value="mail" ${agent.output==='mail'?'selected':''}>E-mail naar Sten</option>
+          <option value="whatsapp" ${agent.output==='whatsapp'?'selected':''}>WhatsApp bericht</option>
+          <option value="pdf" ${agent.output==='pdf'?'selected':''}>PDF document</option>
+          <option value="offerte" ${agent.output==='offerte'?'selected':''}>Offerte aanmaken</option>
+        </select>
+      </div>
+
+      <div class="modal-foot" style="border-color:rgba(255,255,255,0.1)">
+        <button class="btn-out" data-close="ov-agent-config" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2)">Annuleren</button>
+        <button class="btn" id="config-save" style="background:linear-gradient(135deg,#7c3aed,#a855f7);border:none">Opslaan</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.classList.add('open');
+
+  ov.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click', function(){ ov.classList.remove('open'); });
+  });
+
+  document.getElementById('config-save').addEventListener('click', function() {
+    agent.naam = document.getElementById('config-naam').value.trim() || agent.naam;
+    agent.omschr = document.getElementById('config-omschr').value.trim() || agent.omschr;
+    agent.instructies = document.getElementById('config-instructies').value.trim();
+    agent.frequentie = document.getElementById('config-frequentie').value;
+    agent.output = document.getElementById('config-output').value;
+    // Markeer als gebouwd als er instructies zijn
+    if(agent.instructies && agent.status === 'concept') agent.status = 'gebouwd';
+    save();
+    ov.classList.remove('open');
+    renderAgents();
+    if(window.toonMelding) toonMelding('✓ Agent "'+agent.naam+'" geconfigureerd', 3000);
+  });
+}
+
+// Modal voor nieuwe agent
+function openAgentModal(teamId) {
+  var bestaand = document.getElementById('ov-agent-new');
+  if(bestaand) bestaand.remove();
+
+  var team = DB.agentTeams.find(function(t){ return t.id === teamId; });
+
+  var ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.id = 'ov-agent-new';
+  ov.style.background = 'rgba(10,0,20,0.85)';
+  ov.innerHTML = `
+    <div class="modal" style="background:linear-gradient(160deg,#1a0a2e,#120820);border:1px solid rgba(124,58,237,0.3);color:#fff;width:min(480px,100%)">
+      <div class="modal-hdr">
+        <h2 style="color:#fff;font-family:'Fraunces',serif">Nieuwe agent ${team ? '— '+team.naam : ''}</h2>
+        <button class="close-x" data-close="ov-agent-new" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2)">&#x2715;</button>
+      </div>
+      <div class="form-row" style="margin-bottom:13px">
+        <label style="color:rgba(255,255,255,0.5)">Naam van de agent</label>
+        <input type="text" id="agent-naam" placeholder="bijv. Offerte Generator" style="background:rgba(255,255,255,0.07);border-color:rgba(124,58,237,0.4);color:#fff">
+      </div>
+      <div class="form-row" style="margin-bottom:13px">
+        <label style="color:rgba(255,255,255,0.5)">Wat doet deze agent?</label>
+        <textarea id="agent-omschr" rows="3" placeholder="Beschrijf wat de agent automatisch doet..." style="width:100%;padding:8px 11px;border:1px solid rgba(124,58,237,0.4);border-radius:var(--r);font-size:12px;font-family:'DM Mono',monospace;background:rgba(255,255,255,0.07);color:#fff;outline:none;resize:vertical"></textarea>
+      </div>
+      <div class="form-row" style="margin-bottom:13px">
+        <label style="color:rgba(255,255,255,0.5)">Icon (emoji)</label>
+        <input type="text" id="agent-icon" placeholder="🤖" maxlength="2" style="background:rgba(255,255,255,0.07);border-color:rgba(124,58,237,0.4);color:#fff;max-width:80px;font-size:20px;text-align:center">
+      </div>
+      <div class="form-row" style="margin-bottom:20px">
+        <label style="color:rgba(255,255,255,0.5)">Afdeling</label>
+        <select id="agent-team" style="background:#1a0a2e;border-color:rgba(124,58,237,0.4);color:#fff">
+          ${DB.agentTeams.map(function(t){ return '<option value="'+t.id+'"'+(t.id===teamId?' selected':'')+'>'+t.icon+' '+t.naam+'</option>'; }).join('')}
+        </select>
+      </div>
+      <div class="modal-foot" style="border-color:rgba(255,255,255,0.1)">
+        <button class="btn-out" data-close="ov-agent-new" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2)">Annuleren</button>
+        <button class="btn" id="agent-save" style="background:linear-gradient(135deg,#7c3aed,#a855f7);border:none">Agent toevoegen</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.classList.add('open');
+
+  ov.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click', function(){ ov.classList.remove('open'); });
+  });
+
+  document.getElementById('agent-save').addEventListener('click', function() {
+    var naam = document.getElementById('agent-naam').value.trim();
+    var omschr = document.getElementById('agent-omschr').value.trim();
+    var icon = document.getElementById('agent-icon').value.trim() || '🤖';
+    var selTeamId = document.getElementById('agent-team').value;
+
+    if(!naam) { alert('Geef de agent een naam.'); return; }
+
+    var selTeam = DB.agentTeams.find(function(t){ return t.id === selTeamId; });
+    if(selTeam) {
+      selTeam.agents.push({
+        id: 'ag' + Date.now(),
+        naam: naam,
+        omschr: omschr || 'Nog geen beschrijving',
+        icon: icon,
+        status: 'concept',
+      });
+      save();
+      ov.classList.remove('open');
+      renderAgents();
+      if(window.toonMelding) toonMelding('✓ Agent "'+naam+'" toegevoegd', 3000);
+    }
+  });
+}
+
+// Init
+var check = setInterval(function(){
+  if(!document.getElementById('agent-new')) return;
+  clearInterval(check);
+
+  initAgents();
+  renderAgents();
+
+  document.getElementById('agent-new').addEventListener('click', function(){
+    openAgentModal(DB.agentTeams[0].id);
+  });
+
+  // Voeg toe aan renderPage
+  var orig = window.renderPage;
+  window.renderPage = function(pg) {
+    if(orig) orig(pg);
+    if(pg === 'agents') renderAgents();
+  };
+
+}, 300);
+
 })();
 </script>
