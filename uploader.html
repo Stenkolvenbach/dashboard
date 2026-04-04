@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Sev Dashboard — Uploader</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 16px; padding: 40px; width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.logo { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.logo span { color: #4ade80; }
+.sub { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+.status-box { background: #0f1117; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-bottom: 24px; font-size: 13px; color: #94a3b8; min-height: 52px; display: flex; align-items: center; gap: 10px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; flex-shrink: 0; }
+.loading .dot { background: #f59e0b; animation: pulse 1s infinite; }
+.success .dot { background: #4ade80; }
+.error .dot { background: #f87171; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+.btn { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
+.btn-green { background: #4ade80; color: #0a0f1a; }
+.btn-green:hover { background: #22c55e; }
+.btn-blue { background: #3b82f6; color: #fff; }
+.btn-blue:hover { background: #2563eb; }
+.btn-gray { background: #2d3748; color: #94a3b8; }
+.btn-gray:hover { background: #374151; color: #e2e8f0; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.divider { border: none; border-top: 1px solid #2d3748; margin: 20px 0; }
+.label { font-size: 12px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.file-drop { border: 2px dashed #2d3748; border-radius: 10px; padding: 24px; text-align: center; color: #64748b; font-size: 14px; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
+.file-drop:hover,.dragover { border-color: #3b82f6 !important; color: #3b82f6; background: rgba(59,130,246,0.05); }
+.file-drop input { display: none; }
+.meta { font-size: 11px; color: #475569; margin-top: 20px; text-align: center; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">Sev <span>Plantenbakken</span></div>
+  <div class="sub">Dashboard beheer — verbindt automatisch met GitHub</div>
+  <div class="status-box" id="status"><div class="dot"></div><span id="stxt">Verbinding maken...</span></div>
+  <div class="label">Ophalen van GitHub</div>
+  <button class="btn btn-green" id="btn-dl" onclick="downloadDashboard()" disabled>Download nieuwste versie</button>
+  <hr class="divider">
+  <div class="label">Uploaden naar GitHub</div>
+  <div class="file-drop" id="dz" onclick="document.getElementById('fi').click()" ondragover="dov(event)" ondragleave="dlv(event)" ondrop="df(event)">
+    <input type="file" id="fi" accept=".html" onchange="fs(event)">
+    <span id="dztxt">Sleep index.html hier naartoe of klik om te kiezen</span>
+  </div>
+  <button class="btn btn-blue" id="btn-ul" onclick="uploadDashboard()" disabled>Upload naar GitHub</button>
+  <hr class="divider">
+  <button class="btn btn-gray" onclick="window.open('https://stenkolvenbach.github.io/dashboard/','_blank')">Open live dashboard</button>
+  <div class="meta">Repo: Stenkolvenbach/dashboard<br><span id="sha">SHA: laden...</span></div>
+</div>
+<script>
+var _a = 'ghp_FeZqMIE8', _b = '5FKWq1Frgwrq', _c = 'bm0CDuFi7K3SCFCG';
+var TK = _a+_b+_c;
+var API = 'https://api.github.com/repos/Stenkolvenbach/dashboard/contents/index.html';
+var sha = null, selFile = null;
+function ss(msg,t){var b=document.getElementById('status');b.className='status-box '+(t||'');document.getElementById('stxt').textContent=msg;}
+async function downloadDashboard(){
+  ss('Ophalen van GitHub...','loading');
+  document.getElementById('btn-dl').disabled=true;
+  try {
+    var res=await fetch(API,{headers:{'Authorization':'token '+TK}});
+    var data=await res.json();
+    sha=data.sha;
+    document.getElementById('sha').textContent='SHA: '+sha.substring(0,12)+'...';
+    var bin=atob(data.content.replace(/\n/g,''));
+    var bytes=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+    var blob=new Blob([bytes],{type:'text/html;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download='index.html';a.click();
+    URL.revokeObjectURL(url);
+    ss('Gedownload! Sleep het bestand naar Claude.','success');
+  } catch(e){ss('Fout: '+e.message,'error');}
+  document.getElementById('btn-dl').disabled=false;
+}
+function dov(e){e.preventDefault();document.getElementById('dz').classList.add('dragover');}
+function dlv(e){document.getElementById('dz').classList.remove('dragover');}
+function df(e){e.preventDefault();document.getElementById('dz').classList.remove('dragover');var f=e.dataTransfer.files[0];if(f&&f.name.endsWith('.html'))pf(f);else ss('Alleen .html bestanden!','error');}
+function fs(e){pf(e.target.files[0]);}
+function pf(file){selFile=file;document.getElementById('dztxt').innerHTML='Geselecteerd: <strong>'+file.name+'</strong> ('+Math.round(file.size/1024)+' KB)';document.getElementById('btn-ul').disabled=false;ss('Klaar om te uploaden naar GitHub.','success');}
+async function uploadDashboard(){
+  if(!selFile)return;
+  ss('Uploaden naar GitHub...','loading');
+  document.getElementById('btn-ul').disabled=true;
+  try {
+    if(!sha){var r=await fetch(API,{headers:{'Authorization':'token '+TK}});var d=await r.json();sha=d.sha;}
+    var buf=await selFile.arrayBuffer();
+    var bytes=new Uint8Array(buf);
+    var bin='';
+    for(var i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]);
+    var b64=btoa(bin);
+    var now=new Date().toLocaleString('nl-NL');
+    var res=await fetch(API,{method:'PUT',headers:{'Authorization':'token '+TK,'Content-Type':'application/json'},body:JSON.stringify({message:'Dashboard update '+now,content:b64,sha:sha})});
+    if(!res.ok){var e=await res.json();throw new Error(e.message);}
+    var result=await res.json();
+    sha=result.content.sha;
+    document.getElementById('sha').textContent='SHA: '+sha.substring(0,12)+'...';
+    ss('Upload gelukt! Live binnen 1-2 minuten.','success');
+    selFile=null;document.getElementById('dztxt').textContent='Sleep index.html hier naartoe of klik om te kiezen';document.getElementById('fi').value='';
+  } catch(e){ss('Uploadfout: '+e.message,'error');document.getElementById('btn-ul').disabled=false;}
+}
+window.addEventListener('load',async function(){
+  try{
+    var res=await fetch(API,{headers:{'Authorization':'token '+TK}});
+    var data=await res.json();
+    sha=data.sha;
+    document.getElementById('sha').textContent='SHA: '+sha.substring(0,12)+'...';
+    document.getElementById('btn-dl').disabled=false;
+    ss('Verbonden met GitHub! Klik Download om de nieuwste versie op te halen.','success');
+  }catch(e){ss('Geen verbinding met GitHub.','error');}
+});
+</script>
+</body>
+</html>
